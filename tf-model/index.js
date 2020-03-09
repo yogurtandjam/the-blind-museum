@@ -42,7 +42,7 @@ export const captureImageManually = () => {
       const oldY = subset.y;
 
       subset.x = tf.keep([...oldX, ...[image, 0]]);
-      subset.y = tf.keep([...oldy, ...[mousePosition, 0]]);
+      subset.y = tf.keep([...oldY, ...[mousePosition, 0]]);
     }
 
     subset.n += 1;
