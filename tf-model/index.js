@@ -86,3 +86,23 @@ const createModel = () => {
 
   return model;
 };
+
+export const fitModel = () => {
+  let batchSize = Math.floor(dataset.train.n * 0.1);
+  if (batchSize < 4) {
+    batchSize = 4;
+  } else if (batchSize > 64) {
+    batchSize = 64;
+  }
+
+  if (currentModel == null) {
+    currentModel = createModel();
+  }
+
+  currentModel.fit(dataset.train.x, dataset.train.y, {
+    batchSize: batchSize,
+    epochs: 20,
+    shuffle: true,
+    validationData: [dataset.val.x, dataset.val.y]
+  });
+};
