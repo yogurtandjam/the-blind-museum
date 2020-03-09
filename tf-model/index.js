@@ -1,6 +1,17 @@
 import * as tf from "@tensorflow/tfjs";
 import { dataset } from "./dataset.js";
 
+const mouse = {
+  x: 0,
+  y: 0,
+
+  handleMouseMove: function(event) {
+    // Get the mouse position and normalize it to [-1, 1]
+    mouse.x = (event.clientX / window.width()) * 2 - 1;
+    mouse.y = (event.clientY / window.height()) * 2 - 1;
+  }
+};
+
 //create testing data
 export const getEyeImageryFromHTML = () => {
   // tidy method cleans up object after image gather is done
