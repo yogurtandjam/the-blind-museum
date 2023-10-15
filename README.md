@@ -1,3 +1,11 @@
+# The Blind Museum
+
+An online application to simulate the sensory experience of a differently-abled museum goer.
+
+By utilizing the New York Met API, you will be able to navigate to different wings and view vast amounts of different artworks. However, these works of art will only be displayed if your eyes are closed.
+
+Future addition: Audioguide to describe the art you are (not) looking at.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
