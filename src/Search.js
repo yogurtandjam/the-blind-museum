@@ -32,7 +32,8 @@ export const Search = ({eyesClosed}) => {
     const handleChangeQuery = e => setQuery(e.target.value)
     return (
         <div>
-            <input value={query} onChange={handleChangeQuery}/>
+            <label for="search">Search for an art piece:</label>
+            <input id="search" value={query} onChange={handleChangeQuery} label="art-search"/>
             {!eyesClosed && <div>Please close your eyes to fully immerse yourself in the blind museum experience</div>}
             <div style={{visibility: eyesClosed ? "visible": "hidden"}}>
              {art.map(artPiece => (
