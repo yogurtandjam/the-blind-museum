@@ -39,31 +39,25 @@ export const detectEyes = async(cb) => {
     await setup()
     if (!detector) return
     const faces = await detector.estimateFaces(videl);
-    console.log(faces)
     if (faces && faces.length > 0) {
-        // console.log('faces', faces[0].keypoints.map((kp, i) => ({name:kp.name, i})).filter(kp => ['leftEye', 'rightEye'].includes(kp.name)))
         faces.forEach((prediction) => {
-            // console.log('face', prediction)
-            let e
             // Right eye parameters
             const lowerRight = prediction.keypoints[145];
             const upperRight = prediction.keypoints[159];
             const leftRight = prediction.keypoints[33];
             const rightRight = prediction.keypoints[133];
             const rightEAR = calculateEAR(upperRight, lowerRight, leftRight, rightRight);
-            // console.log('right ear', rightEAR)
+
             // Left eye parameters
             const lowerLeft = prediction.keypoints[374];
             const upperLeft = prediction.keypoints[386];
             const leftLeft = prediction.keypoints[362];
             const rightLeft = prediction.keypoints[263];
             const leftEAR = calculateEAR(upperLeft, lowerLeft, leftLeft, rightLeft);
-            // console.log('left ear', rightEAR)
         
             // True if the eye is closed
             const closed = leftEAR <= EAR_THRESHOLD && rightEAR <= EAR_THRESHOLD;
-        
-            console.log('isclosed', closed)
+    
             cb(state => state != closed ? closed : state)
         });
     }
@@ -76,8 +70,6 @@ function euclideanDistance(point1, point2) {
 function calculateEAR(topLandmark, bottomLandmark, leftLandmark, rightLandmark) {
     const verticalDist = euclideanDistance(topLandmark, bottomLandmark);
     const horizontalDist = euclideanDistance(leftLandmark, rightLandmark);
-    // console.log('veri dist', verticalDist)
-    // console.log('ohriz dist', horizontalDist)
     const ear = verticalDist / horizontalDist;
     return ear;
 }

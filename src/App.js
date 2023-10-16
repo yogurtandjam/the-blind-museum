@@ -18,6 +18,8 @@ function App() {
     ).then(
       res => setPic(res.primaryImage)
     )
+
+    fetch('/ping')
   }, [])
   return (
     <div className="App">
