@@ -1,3 +1,8 @@
+// TODO: actually use this later.
+// right now just going to use the met API directly
+// we'll need this if we want to construct our own API with met's data
+// because the met's API is hot garbage
+
 const express = require('express');
 const bodyParser = require('body-parser')
 const path = require('path');
