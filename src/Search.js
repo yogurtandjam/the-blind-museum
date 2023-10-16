@@ -33,11 +33,14 @@ export const Search = ({eyesClosed}) => {
     return (
         <div>
             <input value={query} onChange={handleChangeQuery}/>
-            {eyesClosed ? art.map(artPiece => (
+            {!eyesClosed && <div>Please close your eyes to fully immerse yourself in the blind museum experience</div>}
+            <div style={{visibility: eyesClosed ? "visible": "hidden"}}>
+             {art.map(artPiece => (
                 <div>
                     <Image src={artPiece.primaryImageSmall}/>
                 </div>
-            )) : <div>Please close your eyes to fully immerse yourself in the blind museum experience</div>}
+            ))}
+            </div>
         </div>
     )
 }
