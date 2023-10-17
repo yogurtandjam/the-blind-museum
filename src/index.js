@@ -6,9 +6,11 @@ import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  // strict mode breaks detector generation b/c you can only have one
+  // strict mode causes us to attempt to generate 2 detectors, breaking the app
+  // <React.StrictMode>
+  <App />
+  // </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function
