@@ -8,10 +8,9 @@ import { Search } from "./Search";
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
   const videoRef = useRef(null);
-  const modelRef = useRef(null);
+  const detectorRef = useRef(null);
 
   const initTensorFlow = async () => {
-    // Start your camera feed or video source here
     const video = videoRef.current;
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: false,
@@ -20,23 +19,23 @@ function App() {
       },
     });
     video.srcObject = stream;
-    // load model
     const detectorConfig = {
       runtime: "mediapipe", // or 'tfjs'
       solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
     };
-    modelRef.current = await fld.createDetector(
+    detectorRef.current = await fld.createDetector(
       fld.SupportedModels.MediaPipeFaceMesh,
       detectorConfig
     );
   };
   const animate = async () => {
-    // console.log("video in animate", videoRef.current);
-    let stuff = await detectEyeClosure(modelRef.current, videoRef.current);
-    const { closed, detector } = stuff;
+    const { closed } = await detectEyeClosure(
+      detectorRef.current,
+      videoRef.current
+    );
     setEyesClosed(closed);
-    await tf.nextFrame(); // Wait for the next animation frame
-    requestAnimationFrame(animate); // Continue the animation loop
+    await tf.nextFrame();
+    requestAnimationFrame(animate);
   };
   useEffect(() => {
     initTensorFlow(); // Initialize TensorFlow and start the animation loop
