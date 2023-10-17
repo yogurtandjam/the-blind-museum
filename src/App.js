@@ -1,8 +1,7 @@
-import './App.css';
-import { useEffect, useState } from 'react';
-import { detectEyes } from './tf';
-import { Search } from './Search';
-
+import "./App.css";
+import { useEffect, useState } from "react";
+import { detectEyes } from "./tf";
+import { Search } from "./Search";
 
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
@@ -12,7 +11,7 @@ function App() {
   }, []);
   return (
     <div className="App">
-      <Search eyesClosed={eyesClosed}/>
+      <Search eyesClosed={eyesClosed} />
     </div>
   );
 }
