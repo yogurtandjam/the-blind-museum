@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/the-blind-museum/static/css/main.073c9b0a.css",
-    "main.js": "/the-blind-museum/static/js/main.0be80b5e.js",
+    "main.js": "/the-blind-museum/static/js/main.2391784f.js",
     "static/js/787.c70fb96e.chunk.js": "/the-blind-museum/static/js/787.c70fb96e.chunk.js",
     "index.html": "/the-blind-museum/index.html",
     "main.073c9b0a.css.map": "/the-blind-museum/static/css/main.073c9b0a.css.map",
-    "main.0be80b5e.js.map": "/the-blind-museum/static/js/main.0be80b5e.js.map",
+    "main.2391784f.js.map": "/the-blind-museum/static/js/main.2391784f.js.map",
     "787.c70fb96e.chunk.js.map": "/the-blind-museum/static/js/787.c70fb96e.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.0be80b5e.js"
+    "static/js/main.2391784f.js"
   ]
 }
