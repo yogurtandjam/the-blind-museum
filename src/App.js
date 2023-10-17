@@ -6,9 +6,8 @@ import { Search } from "./Search";
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
   useEffect(() => {
-    setInterval(() => {
-      detectEyes(setEyesClosed);
-    }, 1000 / 60);
+    const intervalId = setInterval(() => detectEyes(setEyesClosed), 1000 / 60);
+    return () => clearInterval(intervalId);
   }, []);
   return (
     <div className="App">
