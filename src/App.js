@@ -1,16 +1,58 @@
 import "./App.css";
-import { useEffect, useState } from "react";
-import { detectEyes } from "./tf";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { detectEyeClosure, setup } from "./tf";
+import * as tf from "@tensorflow/tfjs";
+import * as fld from "@tensorflow-models/face-landmarks-detection";
 import { Search } from "./Search";
 
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
+  const videoRef = useRef(null);
+  const modelRef = useRef(null);
+
+  const initTensorFlow = async () => {
+    // Start your camera feed or video source here
+    const video = videoRef.current;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: "user",
+      },
+    });
+    video.srcObject = stream;
+    // load model
+    const detectorConfig = {
+      runtime: "mediapipe", // or 'tfjs'
+      solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+    };
+    modelRef.current = await fld.createDetector(
+      fld.SupportedModels.MediaPipeFaceMesh,
+      detectorConfig
+    );
+  };
+  const animate = async () => {
+    // console.log("video in animate", videoRef.current);
+    let stuff = await detectEyeClosure(modelRef.current, videoRef.current);
+    const { closed, detector } = stuff;
+    setEyesClosed(closed);
+    await tf.nextFrame(); // Wait for the next animation frame
+    requestAnimationFrame(animate); // Continue the animation loop
+  };
   useEffect(() => {
-    const intervalId = setInterval(() => detectEyes(setEyesClosed), 1000 / 60);
-    return () => clearInterval(intervalId);
+    initTensorFlow(); // Initialize TensorFlow and start the animation loop
   }, []);
   return (
     <div className="App">
+      <video
+        ref={videoRef}
+        width="640"
+        height="480"
+        autoPlay
+        playsInline
+        muted
+        onLoadedMetadata={animate}
+        style={{ visibility: "hidden", position: "absolute" }}
+      />
       <Search eyesClosed={eyesClosed} />
     </div>
   );

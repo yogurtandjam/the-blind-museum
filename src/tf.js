@@ -1,9 +1,4 @@
-import * as fld from "@tensorflow-models/face-landmarks-detection";
-
-let hasRun = false;
 const EAR_THRESHOLD = 0.2;
-let detector;
-const videl = document.getElementById("webcam");
 
 const rightEyeKeyPoints = (keypoints) => {
   return {
@@ -22,22 +17,12 @@ const leftEyeKeyPoints = (keypoints) => {
   };
 };
 
-const setup = async () => {
-  if (hasRun) return;
-  hasRun = true;
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  videl.srcObject = stream;
-  const model = fld.SupportedModels.MediaPipeFaceMesh;
-  const detectorConfig = {
-    runtime: "mediapipe", // or 'tfjs'
-    solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
-  };
-  detector = await fld.createDetector(model, detectorConfig);
-};
-export const detectEyes = async (cb) => {
-  await setup();
-  if (!detector) return;
-  const faces = await detector.estimateFaces(videl);
+export const detectEyeClosure = async (model, video) => {
+  if (!model || !video) {
+    return {};
+  }
+  const faces = await model.estimateFaces(video);
+  let obj = {};
   if (faces && faces.length > 0) {
     faces.forEach(({ keypoints }) => {
       const rightEAR = calculateEAR(rightEyeKeyPoints(keypoints));
@@ -45,10 +30,12 @@ export const detectEyes = async (cb) => {
 
       // True if the eye is closed
       const closed = leftEAR <= EAR_THRESHOLD && rightEAR <= EAR_THRESHOLD;
-
-      cb((state) => (state != closed ? closed : state));
+      obj = {
+        closed,
+      };
     });
   }
+  return obj;
 };
 
 function euclideanDistance(point1, point2) {
