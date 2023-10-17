@@ -6,6 +6,8 @@ import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
+  // strict mode breaks detector generation b/c you can only have one
+  // strict mode causes us to attempt to generate 2 detectors, breaking the app
   // <React.StrictMode>
   <App />
   // </React.StrictMode>,

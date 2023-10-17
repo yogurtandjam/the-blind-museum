@@ -17,11 +17,11 @@ const leftEyeKeyPoints = (keypoints) => {
   };
 };
 
-export const detectEyeClosure = async (model, video) => {
-  if (!model || !video) {
+export const detectEyeClosure = async (detector, video) => {
+  if (!detector || !video) {
     return {};
   }
-  const faces = await model.estimateFaces(video);
+  const faces = await detector.estimateFaces(video);
   let obj = {};
   if (faces && faces.length > 0) {
     faces.forEach(({ keypoints }) => {
