@@ -37,7 +37,7 @@ function App() {
   };
 
   const animate = async () => {
-    const closed = await detectEyeClosure(
+    const { closed } = await detectEyeClosure(
       detectorRef.current,
       videoRef.current
     );

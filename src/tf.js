@@ -20,15 +20,15 @@ const leftEyeKeyPoints = (keypoints) => {
 
 export const detectEyeClosure = async (detector, video) => {
   if (!detector || !video) {
-    return false;
+    return { closed: false };
   }
   const faces = await detector.estimateFaces(video);
 
   if (!faces || faces.length === 0) {
-    return false;
+    return { closed: false };
   }
 
-  return faces.every((face) => {
+  const closed = faces.every((face) => {
     const { keypoints } = face;
 
     const rightEAR = calculateEAR(rightEyeKeyPoints(keypoints));
@@ -37,6 +37,7 @@ export const detectEyeClosure = async (detector, video) => {
     // true if both eyes are closed
     return leftEAR <= EAR_THRESHOLD && rightEAR <= EAR_THRESHOLD;
   });
+  return { closed };
 };
 
 function euclideanDistance(point1, point2) {
