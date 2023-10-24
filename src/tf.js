@@ -1,4 +1,5 @@
-const EAR_THRESHOLD = 0.2;
+// Average EAR for eyes open is 0.141 and for eyes closed is 0.339
+const EAR_THRESHOLD = 0.141;
 
 const rightEyeKeyPoints = (keypoints) => {
   return {
@@ -19,23 +20,24 @@ const leftEyeKeyPoints = (keypoints) => {
 
 export const detectEyeClosure = async (detector, video) => {
   if (!detector || !video) {
-    return {};
+    return { closed: false };
   }
   const faces = await detector.estimateFaces(video);
-  let obj = {};
-  if (faces && faces.length > 0) {
-    faces.forEach(({ keypoints }) => {
-      const rightEAR = calculateEAR(rightEyeKeyPoints(keypoints));
-      const leftEAR = calculateEAR(leftEyeKeyPoints(keypoints));
 
-      // True if the eye is closed
-      const closed = leftEAR <= EAR_THRESHOLD && rightEAR <= EAR_THRESHOLD;
-      obj = {
-        closed,
-      };
-    });
+  if (!faces || faces.length === 0) {
+    return { closed: false };
   }
-  return obj;
+
+  const closed = faces.every((face) => {
+    const { keypoints } = face;
+
+    const rightEAR = calculateEAR(rightEyeKeyPoints(keypoints));
+    const leftEAR = calculateEAR(leftEyeKeyPoints(keypoints));
+
+    // true if both eyes are closed
+    return leftEAR <= EAR_THRESHOLD && rightEAR <= EAR_THRESHOLD;
+  });
+  return { closed };
 };
 
 function euclideanDistance(point1, point2) {
