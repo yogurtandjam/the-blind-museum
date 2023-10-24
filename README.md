@@ -6,7 +6,14 @@ By utilizing the New York Met API, you will be able to navigate to different win
 
 Future addition: Audioguide to describe the art you are (not) looking at.
 
-# Getting Started with Create React App
+## How to Deploy
+
+Just go to the branch you want to deploy and run this command:
+```bash
+npm run deploy
+```
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
