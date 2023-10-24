@@ -54,13 +54,13 @@ function App() {
     <div className="App">
       <video
         ref={videoRef}
-        width="640"
-        height="480"
+        width="1"
+        height="1"
         autoPlay
         playsInline
         muted
         onLoadedMetadata={animate}
-        style={{ visibility: "hidden", position: "absolute" }}
+        style={{ position: "absolute" }}
       />
       <Search eyesClosed={eyesClosed} />
     </div>
