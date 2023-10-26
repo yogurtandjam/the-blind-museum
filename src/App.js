@@ -60,7 +60,7 @@ function App() {
         playsInline
         muted
         onLoadedMetadata={animate}
-        style={{ position: "absolute" }}
+        style={{ position: "fixed" }}
       />
       <Search eyesClosed={eyesClosed} />
     </div>
