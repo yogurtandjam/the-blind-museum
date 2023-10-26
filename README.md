@@ -1,6 +1,6 @@
 # The Blind Museum
 
-An online application to simulate the sensory experience of a differently-abled museum goer.
+An [online application](https://yogurtandjam.github.io/the-blind-museum/) to simulate the sensory experience of a differently-abled museum-goer.
 
 By utilizing the New York Met API, you will be able to navigate to different wings and view vast amounts of different artworks. However, these works of art will only be displayed if your eyes are closed.
 
