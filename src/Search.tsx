@@ -3,6 +3,7 @@ import { useEffect, useCallback, useState, ChangeEvent } from "react";
 import { OBJ_URL, SEARCH_URL } from "./consts";
 import { Art } from "./models/Art";
 import Image from "./Image";
+
 type TArtworkIds = {
   objectIDs: string[];
 };
@@ -10,7 +11,7 @@ type TArtPiece = {
   objectID: string;
   primaryImageSmall: string;
 };
-type TArt = TArtPiece[];
+type TArtPieces = TArtPiece[];
 
 const search = async (q: string) => {
   const res = await fetch(`${SEARCH_URL}?q=${q}`);
@@ -32,10 +33,10 @@ const search = async (q: string) => {
 
 export const Search = ({ eyesClosed }: { eyesClosed: boolean }) => {
   const [query, setQuery] = useState("");
-  const [art, setArt] = useState<TArt | []>([]);
+  const [art, setArt] = useState<TArtPieces | []>([]);
 
   const debouncedFetch = useCallback(
-    debounce((q) => search(q).then((res) => setArt(res as TArt)), 500),
+    debounce((q) => search(q).then((res) => setArt(res as TArtPieces)), 500),
     []
   );
 
