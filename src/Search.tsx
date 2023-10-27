@@ -1,12 +1,21 @@
 import debounce from "lodash.debounce";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, ChangeEvent } from "react";
 import { OBJ_URL, SEARCH_URL } from "./consts";
 import { Art } from "./models/Art";
 import Image from "./Image";
 
-const search = async (q) => {
+type TArtworkIds = {
+  objectIDs: string[];
+};
+type TArtPiece = {
+  objectID: string;
+  primaryImageSmall: string;
+};
+type TArtPieces = TArtPiece[];
+
+const search = async (q: string) => {
   const res = await fetch(`${SEARCH_URL}?q=${q}`);
-  const artworkIds = await res.json();
+  const artworkIds: TArtworkIds = await res.json();
 
   console.log({ artworkIds });
 
@@ -22,12 +31,12 @@ const search = async (q) => {
   return validObjs.map((validObj) => new Art(validObj));
 };
 
-export const Search = ({ eyesClosed }) => {
+export const Search = ({ eyesClosed }: { eyesClosed: boolean }) => {
   const [query, setQuery] = useState("");
-  const [art, setArt] = useState([]);
+  const [art, setArt] = useState<TArtPieces | []>([]);
 
   const debouncedFetch = useCallback(
-    debounce((q) => search(q).then(setArt), 500),
+    debounce((q) => search(q).then((res) => setArt(res as TArtPieces)), 500),
     []
   );
 
@@ -40,16 +49,12 @@ export const Search = ({ eyesClosed }) => {
   useEffect(() => {
     console.log({ art });
   }, [art]);
-  const handleChangeQuery = (e) => setQuery(e.target.value);
+  const handleChangeQuery = (e: ChangeEvent<HTMLInputElement>) =>
+    setQuery(e.target.value);
   return (
     <div>
       <label htmlFor="search">Search for an art piece:</label>
-      <input
-        id="search"
-        value={query}
-        onChange={handleChangeQuery}
-        label="art-search"
-      />
+      <input id="search" value={query} onChange={handleChangeQuery} />
       {!eyesClosed && (
         <div>
           Please close your eyes to fully immerse yourself in the blind museum

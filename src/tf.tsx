@@ -1,7 +1,23 @@
+// https://stackoverflow.com/questions/61412000/do-i-need-to-use-the-import-type-feature-of-typescript-3-8-if-all-of-my-import
+import type { FaceLandmarksDetector } from "@tensorflow-models/face-landmarks-detection";
+
+type Keypoint = {
+  x: number;
+  y: number;
+};
+type Keypoints = Keypoint[];
+
+type EyeKeypoints = {
+  bottomLandmark: Keypoint;
+  topLandmark: Keypoint;
+  leftLandmark: Keypoint;
+  rightLandmark: Keypoint;
+};
+
 // Average EAR for eyes open is 0.141 and for eyes closed is 0.339
 const EAR_THRESHOLD = 0.141;
 
-const rightEyeKeyPoints = (keypoints) => {
+const rightEyeKeyPoints = (keypoints: Keypoints): EyeKeypoints => {
   return {
     bottomLandmark: keypoints[145],
     topLandmark: keypoints[159],
@@ -9,7 +25,7 @@ const rightEyeKeyPoints = (keypoints) => {
     rightLandmark: keypoints[133],
   };
 };
-const leftEyeKeyPoints = (keypoints) => {
+const leftEyeKeyPoints = (keypoints: Keypoints): EyeKeypoints => {
   return {
     bottomLandmark: keypoints[374],
     topLandmark: keypoints[386],
@@ -18,7 +34,10 @@ const leftEyeKeyPoints = (keypoints) => {
   };
 };
 
-export const detectEyeClosure = async (detector, video) => {
+export const detectEyeClosure = async (
+  detector: FaceLandmarksDetector | null,
+  video: HTMLVideoElement | null
+) => {
   if (!detector || !video) {
     return { closed: false };
   }
@@ -40,7 +59,7 @@ export const detectEyeClosure = async (detector, video) => {
   return { closed };
 };
 
-function euclideanDistance(point1, point2) {
+function euclideanDistance(point1: Keypoint, point2: Keypoint) {
   return Math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2);
 }
 
@@ -49,7 +68,7 @@ function calculateEAR({
   bottomLandmark,
   leftLandmark,
   rightLandmark,
-}) {
+}: EyeKeypoints) {
   const verticalDist = euclideanDistance(topLandmark, bottomLandmark);
   const horizontalDist = euclideanDistance(leftLandmark, rightLandmark);
   const ear = verticalDist / horizontalDist;

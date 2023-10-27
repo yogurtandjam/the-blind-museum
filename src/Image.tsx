@@ -1,4 +1,7 @@
-export default (props) => {
+type ImageProps = {
+  src: string;
+};
+export default (props: ImageProps) => {
   return (
     <div>
       <img
