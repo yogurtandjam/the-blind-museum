@@ -1,4 +1,5 @@
-import { FaceLandmarksDetector } from "@tensorflow-models/face-landmarks-detection";
+// https://stackoverflow.com/questions/61412000/do-i-need-to-use-the-import-type-feature-of-typescript-3-8-if-all-of-my-import
+import type { FaceLandmarksDetector } from "@tensorflow-models/face-landmarks-detection";
 
 type Keypoint = {
   x: number;
