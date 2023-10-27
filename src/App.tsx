@@ -1,6 +1,6 @@
 import "./App.css";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { detectEyeClosure, setup } from "./tf";
+import { useEffect, useRef, useState } from "react";
+import { detectEyeClosure } from "./tf";
 import * as tf from "@tensorflow/tfjs";
 import * as fld from "@tensorflow-models/face-landmarks-detection";
 import { Search } from "./Search";
@@ -12,7 +12,7 @@ const USER_MEDIA_CONSTRAINTS = {
   },
 };
 
-const DETECTOR_CONFIG = {
+const DETECTOR_CONFIG: fld.MediaPipeFaceMeshMediaPipeModelConfig = {
   runtime: "mediapipe", // or 'tfjs'
   solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
   refineLandmarks: true,
@@ -20,14 +20,15 @@ const DETECTOR_CONFIG = {
 
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
-  const videoRef = useRef(null);
-  const detectorRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
 
   const initTensorFlow = async () => {
     const video = videoRef.current;
     const stream = await navigator.mediaDevices.getUserMedia(
       USER_MEDIA_CONSTRAINTS
     );
+    if (!video) return;
     video.srcObject = stream;
 
     detectorRef.current = await fld.createDetector(
