@@ -9,6 +9,7 @@ export default (props: ImageProps) => {
     <div
       className={css({
         marginTop: theme.sizing.scale650,
+        textAlign: "center",
       })}
     >
       <img

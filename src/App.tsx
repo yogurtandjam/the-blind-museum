@@ -24,9 +24,12 @@ const detectorPromise = fld.createDetector(
   DETECTOR_CONFIG
 );
 
+const MAX_EYES_CLOSED_COUNT = 10;
+const DETECTOR_SMOOTHING = 0.7;
+
 function App() {
   const [css, theme] = useStyletron();
-  const [eyesClosed, setEyesClosed] = useState(false);
+  const [eyesClosedCount, setEyesClosedCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
 
@@ -35,7 +38,16 @@ function App() {
       detectorRef.current,
       videoRef.current
     );
-    setEyesClosed(closed);
+    setEyesClosedCount((prev) => {
+      const next = closed ? prev + 1 : prev - 1;
+      if (next < 0) {
+        return 0;
+      } else if (next > MAX_EYES_CLOSED_COUNT) {
+        return MAX_EYES_CLOSED_COUNT;
+      } else {
+        return next;
+      }
+    });
     await tf.nextFrame();
     requestAnimationFrame(animate);
   };
@@ -51,6 +63,9 @@ function App() {
     };
     initTensorFlow();
   }, []);
+
+  const eyesClosed =
+    eyesClosedCount > MAX_EYES_CLOSED_COUNT * DETECTOR_SMOOTHING;
 
   return (
     <div
