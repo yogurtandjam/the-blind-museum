@@ -40,12 +40,11 @@ function App() {
 
   useEffect(() => {
     const initTensorFlow = async () => {
-      const video = videoRef.current;
-      if (!video) return;
+      if (!videoRef.current) return;
       const stream = await navigator.mediaDevices.getUserMedia(
         USER_MEDIA_CONSTRAINTS
       );
-      video.srcObject = stream;
+      videoRef.current.srcObject = stream;
       detectorRef.current = await detectorPromise;
     };
     initTensorFlow();
