@@ -3,6 +3,8 @@ import { useEffect, useCallback, useState, ChangeEvent } from "react";
 import { OBJ_URL, SEARCH_URL } from "./consts";
 import { Art } from "./models/Art";
 import Image from "./Image";
+import { Input } from "baseui/input";
+import { ParagraphLarge } from "baseui/typography";
 
 type TArtworkIds = {
   objectIDs: string[];
@@ -12,6 +14,8 @@ type TArtPiece = {
   primaryImageSmall: string;
 };
 type TArtPieces = TArtPiece[];
+
+const MAX_WIDTH = 500;
 
 const search = async (q: string) => {
   const res = await fetch(`${SEARCH_URL}?q=${q}`);
@@ -49,25 +53,36 @@ export const Search = ({ eyesClosed }: { eyesClosed: boolean }) => {
   useEffect(() => {
     console.log({ art });
   }, [art]);
-  const handleChangeQuery = (e: ChangeEvent<HTMLInputElement>) =>
-    setQuery(e.target.value);
+  const handleChangeQuery = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => setQuery(e.target.value);
+
   return (
-    <div>
-      <label htmlFor="search">Search for an art piece:</label>
-      <input id="search" value={query} onChange={handleChangeQuery} />
+    <>
+      <Input
+        id="search"
+        value={query}
+        onChange={handleChangeQuery}
+        placeholder="Search for an art piece"
+        overrides={{
+          Root: {
+            style: {
+              maxWidth: `${MAX_WIDTH}px`,
+            },
+          },
+        }}
+      />
       {!eyesClosed && (
-        <div>
+        <ParagraphLarge>
           Please close your eyes to fully immerse yourself in the blind museum
-          experience
-        </div>
+          experience.
+        </ParagraphLarge>
       )}
       <div style={{ visibility: eyesClosed ? "visible" : "hidden" }}>
         {art.map((artPiece) => (
-          <div key={artPiece.objectID}>
-            <Image src={artPiece.primaryImageSmall} />
-          </div>
+          <Image key={artPiece.objectID} src={artPiece.primaryImageSmall} />
         ))}
       </div>
-    </div>
+    </>
   );
 };

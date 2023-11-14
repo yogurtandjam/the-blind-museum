@@ -1,5 +1,6 @@
-import "./App.css";
 import { useEffect, useRef, useState } from "react";
+import { useStyletron } from "baseui";
+import { HeadingXSmall } from "baseui/typography";
 import { detectEyeClosure } from "./tf";
 import * as tf from "@tensorflow/tfjs";
 import * as fld from "@tensorflow-models/face-landmarks-detection";
@@ -24,6 +25,7 @@ const detectorPromise = fld.createDetector(
 );
 
 function App() {
+  const [css, theme] = useStyletron();
   const [eyesClosed, setEyesClosed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
@@ -51,7 +53,14 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
+    <div
+      className={css({
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        margin: theme.sizing.scale650,
+      })}
+    >
       <video
         ref={videoRef}
         width="1"
@@ -62,6 +71,9 @@ function App() {
         onLoadedMetadata={animate}
         style={{ position: "fixed" }}
       />
+      <HeadingXSmall marginTop={0} marginBottom={theme.sizing.scale650}>
+        The Blind Museum
+      </HeadingXSmall>
       <Search eyesClosed={eyesClosed} />
     </div>
   );
