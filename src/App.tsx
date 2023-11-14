@@ -25,7 +25,7 @@ const detectorPromise = fld.createDetector(
 );
 
 const MAX_EYES_CLOSED_COUNT = 10;
-const DETECTOR_SMOOTHING = 0.5;
+const DETECTOR_SMOOTHING = 0.7;
 
 function App() {
   const [css, theme] = useStyletron();
