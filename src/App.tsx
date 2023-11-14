@@ -18,11 +18,15 @@ const DETECTOR_CONFIG: fld.MediaPipeFaceMeshMediaPipeModelConfig = {
   refineLandmarks: true,
 };
 
+const detectorPromise = fld.createDetector(
+  fld.SupportedModels.MediaPipeFaceMesh,
+  DETECTOR_CONFIG
+);
+
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
-  const isDetectorCreationStarted = useRef(false);
 
   const animate = async () => {
     const { closed } = await detectEyeClosure(
@@ -42,17 +46,7 @@ function App() {
         USER_MEDIA_CONSTRAINTS
       );
       video.srcObject = stream;
-
-      // In React.StrictMode useEffect can be called twice
-      if (!isDetectorCreationStarted.current) {
-        isDetectorCreationStarted.current = true;
-
-        console.log("Creating detector");
-        detectorRef.current = await fld.createDetector(
-          fld.SupportedModels.MediaPipeFaceMesh,
-          DETECTOR_CONFIG
-        );
-      }
+      detectorRef.current = await detectorPromise;
     };
     initTensorFlow();
   }, []);
