@@ -22,20 +22,7 @@ function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
-
-  const initTensorFlow = async () => {
-    const video = videoRef.current;
-    const stream = await navigator.mediaDevices.getUserMedia(
-      USER_MEDIA_CONSTRAINTS
-    );
-    if (!video) return;
-    video.srcObject = stream;
-
-    detectorRef.current = await fld.createDetector(
-      fld.SupportedModels.MediaPipeFaceMesh,
-      DETECTOR_CONFIG
-    );
-  };
+  const hasDetectorCreationStarted = useRef(false);
 
   const animate = async () => {
     const { closed } = await detectEyeClosure(
@@ -48,7 +35,26 @@ function App() {
   };
 
   useEffect(() => {
-    initTensorFlow(); // Initialize TensorFlow and start the animation loop
+    const initTensorFlow = async () => {
+      const video = videoRef.current;
+      if (!video) return;
+      const stream = await navigator.mediaDevices.getUserMedia(
+        USER_MEDIA_CONSTRAINTS
+      );
+      video.srcObject = stream;
+
+      // In React.StrictMode useEffect can be called twice
+      if (!hasDetectorCreationStarted.current) {
+        hasDetectorCreationStarted.current = true;
+
+        console.log("Creating detector");
+        detectorRef.current = await fld.createDetector(
+          fld.SupportedModels.MediaPipeFaceMesh,
+          DETECTOR_CONFIG
+        );
+      }
+    };
+    initTensorFlow();
   }, []);
 
   return (
