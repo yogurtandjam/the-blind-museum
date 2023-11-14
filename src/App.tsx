@@ -22,7 +22,7 @@ function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
-  const hasDetectorCreationStarted = useRef(false);
+  const isDetectorCreationStarted = useRef(false);
 
   const animate = async () => {
     const { closed } = await detectEyeClosure(
@@ -44,8 +44,8 @@ function App() {
       video.srcObject = stream;
 
       // In React.StrictMode useEffect can be called twice
-      if (!hasDetectorCreationStarted.current) {
-        hasDetectorCreationStarted.current = true;
+      if (!isDetectorCreationStarted.current) {
+        isDetectorCreationStarted.current = true;
 
         console.log("Creating detector");
         detectorRef.current = await fld.createDetector(
