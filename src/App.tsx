@@ -18,24 +18,15 @@ const DETECTOR_CONFIG: fld.MediaPipeFaceMeshMediaPipeModelConfig = {
   refineLandmarks: true,
 };
 
+const detectorPromise = fld.createDetector(
+  fld.SupportedModels.MediaPipeFaceMesh,
+  DETECTOR_CONFIG
+);
+
 function App() {
   const [eyesClosed, setEyesClosed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
-
-  const initTensorFlow = async () => {
-    const video = videoRef.current;
-    const stream = await navigator.mediaDevices.getUserMedia(
-      USER_MEDIA_CONSTRAINTS
-    );
-    if (!video) return;
-    video.srcObject = stream;
-
-    detectorRef.current = await fld.createDetector(
-      fld.SupportedModels.MediaPipeFaceMesh,
-      DETECTOR_CONFIG
-    );
-  };
 
   const animate = async () => {
     const { closed } = await detectEyeClosure(
@@ -48,7 +39,15 @@ function App() {
   };
 
   useEffect(() => {
-    initTensorFlow(); // Initialize TensorFlow and start the animation loop
+    const initTensorFlow = async () => {
+      if (!videoRef.current) return;
+      const stream = await navigator.mediaDevices.getUserMedia(
+        USER_MEDIA_CONSTRAINTS
+      );
+      videoRef.current.srcObject = stream;
+      detectorRef.current = await detectorPromise;
+    };
+    initTensorFlow();
   }, []);
 
   return (
