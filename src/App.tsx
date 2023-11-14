@@ -65,7 +65,7 @@ function App() {
   }, []);
 
   const eyesClosed =
-    eyesClosedCount < MAX_EYES_CLOSED_COUNT * DETECTOR_SMOOTHING;
+    eyesClosedCount > MAX_EYES_CLOSED_COUNT * DETECTOR_SMOOTHING;
 
   return (
     <div
