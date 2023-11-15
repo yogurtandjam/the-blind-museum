@@ -17,17 +17,28 @@ type TArtPieces = TArtPiece[];
 
 const MAX_WIDTH = 500;
 
-const search = async (q: string) => {
+const EMPTRY_RESULT: string[] = [];
+
+// Search for objectIDs
+const searchObjectIDs = async (q: string) => {
   const res = await fetch(`${SEARCH_URL}?q=${q}`);
-  const artworkIds: TArtworkIds = await res.json();
+  const response: TArtworkIds = await res.json();
 
-  console.log({ artworkIds });
+  console.log({ response });
 
+  return response.objectIDs ?? EMPTRY_RESULT;
+};
+
+// Fetch artworks data from the objectIDs
+const fetchArtworks = async (objectIDs: string[]) => {
   const responses = await Promise.all(
-    (artworkIds.objectIDs || [])
-      .slice(0, 10)
-      .map((id) => fetch(`${OBJ_URL}/${id}`).then((res) => res.json()))
+    objectIDs.map(async (id) => {
+      const res = await fetch(`${OBJ_URL}/${id}`);
+      const artworks = await res.json();
+      return artworks;
+    })
   );
+  console.log({ responses });
 
   const validObjs = responses.filter(
     (res) => res.objectID && res.primaryImageSmall
@@ -37,22 +48,31 @@ const search = async (q: string) => {
 
 export const Search = ({ eyesClosed }: { eyesClosed: boolean }) => {
   const [query, setQuery] = useState("");
-  const [art, setArt] = useState<TArtPieces | []>([]);
+  const [objectIDs, setObjectIDs] = useState<string[]>([]);
+  const [artworks, setArtworks] = useState<TArtPieces | []>([]);
 
-  const debouncedFetch = useCallback(
-    debounce((q) => search(q).then((res) => setArt(res as TArtPieces)), 500),
+  const debouncedFetchObjectIDs = useCallback(
+    debounce((q) => searchObjectIDs(q).then((res) => setObjectIDs(res)), 500),
     []
   );
 
+  // Find new objectIDs when the search query changes
   useEffect(() => {
     if (query.length > 0) {
-      debouncedFetch(query);
+      debouncedFetchObjectIDs(query);
     }
   }, [query]);
 
+  // Fetch artworks data when the objectIDs change
   useEffect(() => {
-    console.log({ art });
-  }, [art]);
+    fetchArtworks(objectIDs.slice(0, 10)).then((res) => setArtworks(res));
+  }, [objectIDs]);
+
+  // Log the artworks when they change
+  useEffect(() => {
+    console.log({ artworks });
+  }, [artworks]);
+
   const handleChangeQuery = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => setQuery(e.target.value);
@@ -79,8 +99,8 @@ export const Search = ({ eyesClosed }: { eyesClosed: boolean }) => {
         </ParagraphLarge>
       )}
       <div style={{ visibility: eyesClosed ? "visible" : "hidden" }}>
-        {art.map((artPiece) => (
-          <Image key={artPiece.objectID} src={artPiece.primaryImageSmall} />
+        {artworks.map((artwork) => (
+          <Image key={artwork.objectID} src={artwork.primaryImageSmall} />
         ))}
       </div>
     </>
