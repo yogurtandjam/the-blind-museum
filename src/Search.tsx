@@ -18,7 +18,7 @@ type TArtPieces = TArtPiece[];
 const MAX_WIDTH = 500;
 
 const search = async (q: string) => {
-  const res = await fetch(`${SEARCH_URL}?q=${q}`);
+  const res = await fetch(`${SEARCH_URL}?q=${q}&hasImages=true`);
   const artworkIds: TArtworkIds = await res.json();
 
   console.log({ artworkIds });
