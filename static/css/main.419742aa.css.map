@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.419742aa.css","mappings":"AAAA,UAME,wBAAyB,CAHzB,QAAS,CADT,SAKF","sources":["index.css"],"sourcesContent":["html,\nbody {\n  padding: 0;\n  margin: 0;\n\n  /* The color is Baseweb's theme.colors.backgroundSecondary */\n  background-color: #f6f6f6;\n}\n"],"names":[],"sourceRoot":""}
