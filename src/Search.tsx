@@ -36,7 +36,7 @@ const search = async (q: string) => {
 };
 
 export const Search = ({ eyesClosed }: { eyesClosed: boolean }) => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("flowers");
   const [art, setArt] = useState<TArtPieces | []>([]);
 
   const debouncedFetch = useCallback(
