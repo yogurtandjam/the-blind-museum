@@ -1,8 +1,4 @@
 import { useState } from "react";
-import { useStyletron } from "baseui";
-import { HeadingXSmall, ParagraphMedium, ParagraphSmall } from "baseui/typography";
-import { Button } from "baseui/button";
-import { Input } from "baseui/input";
 import { getApiKey, setApiKey } from "../audio/tts";
 
 type LobbyProps = {
@@ -11,7 +7,6 @@ type LobbyProps = {
 };
 
 export function Lobby({ onEnterMuseum, onSearch }: LobbyProps) {
-  const [css] = useStyletron();
   const [apiKey, setApiKeyState] = useState(getApiKey() || "");
   const [showKeyInput, setShowKeyInput] = useState(false);
 
@@ -26,7 +21,7 @@ export function Lobby({ onEnterMuseum, onSearch }: LobbyProps) {
 
   return (
     <div
-      className={css({
+      style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -35,51 +30,41 @@ export function Lobby({ onEnterMuseum, onSearch }: LobbyProps) {
         backgroundColor: "#0a0a0a",
         color: "#e0e0e0",
         padding: "2rem",
-      })}
+      }}
     >
-      <HeadingXSmall
-        color="#e0e0e0"
-        marginBottom="1rem"
-        overrides={{
-          Block: {
-            style: {
-              fontSize: "2rem",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase" as const,
-            },
-          },
+      <h1
+        style={{
+          fontSize: "2rem",
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          color: "#e0e0e0",
+          marginBottom: "1rem",
+          fontWeight: 300,
         }}
       >
         The Blind Museum
-      </HeadingXSmall>
+      </h1>
 
-      <ParagraphMedium
-        color="#888"
-        marginBottom="3rem"
-        overrides={{
-          Block: {
-            style: {
-              maxWidth: "400px",
-              textAlign: "center" as const,
-              lineHeight: "1.6",
-            },
-          },
+      <p
+        style={{
+          color: "#888",
+          maxWidth: "400px",
+          textAlign: "center",
+          lineHeight: 1.6,
+          marginBottom: "1rem",
         }}
       >
         A museum you experience with your eyes closed.
-      </ParagraphMedium>
+      </p>
 
-      <ParagraphSmall
-        color="#666"
-        marginBottom="3rem"
-        overrides={{
-          Block: {
-            style: {
-              maxWidth: "400px",
-              textAlign: "center" as const,
-              lineHeight: "1.8",
-            },
-          },
+      <p
+        style={{
+          color: "#666",
+          maxWidth: "400px",
+          textAlign: "center",
+          lineHeight: 1.8,
+          fontSize: "0.9rem",
+          marginBottom: "3rem",
         }}
       >
         &larr; &rarr; Walk between artworks
@@ -87,124 +72,107 @@ export function Lobby({ onEnterMuseum, onSearch }: LobbyProps) {
         &uarr; &darr; Move between wings
         <br />
         Close your eyes to experience each piece
-      </ParagraphSmall>
+      </p>
 
       <div
-        className={css({
+        style={{
           display: "flex",
           flexDirection: "column",
           gap: "1rem",
           width: "280px",
           alignItems: "center",
-        })}
+        }}
       >
-        <Button
+        <button
           onClick={onEnterMuseum}
-          overrides={{
-            BaseButton: {
-              style: {
-                width: "100%",
-                backgroundColor: "#e0e0e0",
-                color: "#0a0a0a",
-                ":hover": { backgroundColor: "#ffffff" },
-              },
-            },
+          style={{
+            width: "100%",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "#e0e0e0",
+            color: "#0a0a0a",
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "1rem",
+            cursor: "pointer",
           }}
         >
           Enter the Museum
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={onSearch}
-          kind="tertiary"
-          overrides={{
-            BaseButton: {
-              style: {
-                width: "100%",
-                color: "#666",
-                ":hover": { color: "#e0e0e0" },
-              },
-            },
+          style={{
+            width: "100%",
+            padding: "0.75rem 1.5rem",
+            backgroundColor: "transparent",
+            color: "#666",
+            border: "none",
+            fontSize: "1rem",
+            cursor: "pointer",
           }}
         >
           Search
-        </Button>
+        </button>
 
-        {/* API key section */}
-        <div className={css({ marginTop: "2rem", width: "100%" })}>
+        <div style={{ marginTop: "2rem", width: "100%" }}>
           {!showKeyInput ? (
-            <ParagraphSmall
-              color="#555"
-              overrides={{
-                Block: {
-                  style: {
-                    cursor: "pointer",
-                    textAlign: "center" as const,
-                    ":hover": { color: "#888" },
-                  },
-                  props: { onClick: () => setShowKeyInput(true) },
-                },
+            <p
+              onClick={() => setShowKeyInput(true)}
+              style={{
+                color: "#555",
+                cursor: "pointer",
+                textAlign: "center",
+                fontSize: "0.85rem",
               }}
             >
               {hasKey ? "OpenAI voice active \u2713" : "Add OpenAI key for AI voice"}
-            </ParagraphSmall>
+            </p>
           ) : (
-            <div className={css({ display: "flex", flexDirection: "column", gap: "0.5rem" })}>
-              <Input
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <input
                 value={apiKey}
-                onChange={(e) => setApiKeyState(e.currentTarget.value)}
+                onChange={(e) => setApiKeyState(e.target.value)}
                 placeholder="sk-..."
                 type="password"
-                overrides={{
-                  Root: {
-                    style: {
-                      backgroundColor: "#1a1a1a",
-                      borderColor: "#333",
-                    },
-                  },
-                  Input: {
-                    style: {
-                      color: "#e0e0e0",
-                      backgroundColor: "#1a1a1a",
-                    },
-                  },
+                style={{
+                  padding: "0.5rem",
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #333",
+                  borderRadius: "4px",
+                  color: "#e0e0e0",
+                  fontSize: "0.9rem",
                 }}
               />
-              <div className={css({ display: "flex", gap: "0.5rem" })}>
-                <Button
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
                   onClick={handleSaveKey}
-                  size="compact"
-                  overrides={{
-                    BaseButton: {
-                      style: {
-                        flex: 1,
-                        backgroundColor: "#333",
-                        color: "#e0e0e0",
-                        ":hover": { backgroundColor: "#444" },
-                      },
-                    },
+                  style={{
+                    flex: 1,
+                    padding: "0.5rem",
+                    backgroundColor: "#333",
+                    color: "#e0e0e0",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
                   }}
                 >
                   Save
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={() => setShowKeyInput(false)}
-                  size="compact"
-                  kind="tertiary"
-                  overrides={{
-                    BaseButton: {
-                      style: {
-                        color: "#555",
-                        ":hover": { color: "#888" },
-                      },
-                    },
+                  style={{
+                    padding: "0.5rem",
+                    backgroundColor: "transparent",
+                    color: "#555",
+                    border: "none",
+                    cursor: "pointer",
                   }}
                 >
                   Cancel
-                </Button>
+                </button>
               </div>
-              <ParagraphSmall color="#444" overrides={{ Block: { style: { fontSize: "0.75rem" } } }}>
+              <p style={{ color: "#444", fontSize: "0.75rem" }}>
                 Stored locally. Without a key, browser voice is used as fallback.
-              </ParagraphSmall>
+              </p>
             </div>
           )}
         </div>

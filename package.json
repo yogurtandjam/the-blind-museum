@@ -2,63 +2,24 @@
   "name": "the-blind-museum",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3001",
-  "homepage": "https://yogurtandjam.github.io/the-blind-museum",
   "dependencies": {
     "@tensorflow-models/face-detection": "1.0.1",
     "@tensorflow-models/face-landmarks-detection": "1.0.2",
     "@tensorflow/tfjs": "3",
     "@tensorflow/tfjs-backend-webgl": "^3.12.0",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^29.5.6",
-    "@types/lodash": "^4.14.200",
     "@types/lodash.debounce": "^4.0.8",
     "@types/node": "^20.8.9",
     "@types/react": "^18.2.33",
     "@types/react-dom": "^18.2.14",
-    "baseui": "^13.0.0",
-    "express": "^4.18.2",
     "lodash.debounce": "^4.0.8",
+    "next": "^14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "styletron-engine-atomic": "^1.6.2",
-    "styletron-react": "^6.1.1",
-    "typescript": "^5.2.2",
-    "web-vitals": "^2.1.4"
-  },
-  "overrides": {
     "typescript": "^5.2.2"
   },
   "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "gh-pages": "^6.0.0"
+    "dev": "next dev -p 67",
+    "build": "next build",
+    "start": "next start -p 67"
   }
 }

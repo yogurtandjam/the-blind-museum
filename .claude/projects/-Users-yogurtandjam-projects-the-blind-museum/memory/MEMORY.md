@@ -1,0 +1,3 @@
+- [Project Vision](project_vision.md) — Immersive virtual museum experience; content only visible with eyes closed
+- [User Profile](user_yogurtandjam.md) — Creative developer exploring interactive/immersive web experiences
+- [No Position Announcements](feedback_no_position_announcements.md) — Skip "artwork N of M" during gallery walk

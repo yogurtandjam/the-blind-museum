@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useStyletron } from "baseui";
-import { HeadingXSmall } from "baseui/typography";
 import { detectEyeClosure } from "./tf";
-import * as tf from "@tensorflow/tfjs";
-import * as fld from "@tensorflow-models/face-landmarks-detection";
 import { Search } from "./Search";
 import { Lobby } from "./components/Lobby";
 import { GalleryWalk } from "./components/GalleryWalk";
@@ -16,58 +12,65 @@ const USER_MEDIA_CONSTRAINTS = {
   },
 };
 
-const DETECTOR_CONFIG: fld.MediaPipeFaceMeshMediaPipeModelConfig = {
-  runtime: "mediapipe", // or 'tfjs'
-  solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
-  refineLandmarks: true,
-};
-
-const detectorPromise = fld.createDetector(
-  fld.SupportedModels.MediaPipeFaceMesh,
-  DETECTOR_CONFIG
-);
-
 const MAX_EYES_CLOSED_COUNT = 10;
 const DETECTOR_SMOOTHING = 0.7;
 
 type AppMode = "lobby" | "search" | "gallery";
 
 function App() {
-  const [css, theme] = useStyletron();
   const [eyesClosedCount, setEyesClosedCount] = useState(0);
   const [mode, setMode] = useState<AppMode>("lobby");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
-
-  const animate = async () => {
-    const { closed } = await detectEyeClosure(
-      detectorRef.current,
-      videoRef.current
-    );
-    setEyesClosedCount((prev) => {
-      const next = closed ? prev + 1 : prev - 1;
-      if (next < 0) {
-        return 0;
-      } else if (next > MAX_EYES_CLOSED_COUNT) {
-        return MAX_EYES_CLOSED_COUNT;
-      } else {
-        return next;
-      }
-    });
-    await tf.nextFrame();
-    requestAnimationFrame(animate);
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const detectorRef = useRef<any>(null);
 
   useEffect(() => {
-    const initTensorFlow = async () => {
+    let running = true;
+
+    const init = async () => {
       if (!videoRef.current) return;
+
+      const [tf, fld] = await Promise.all([
+        import("@tensorflow/tfjs"),
+        import("@tensorflow-models/face-landmarks-detection"),
+      ]);
+
       const stream = await navigator.mediaDevices.getUserMedia(
         USER_MEDIA_CONSTRAINTS
       );
       videoRef.current.srcObject = stream;
-      detectorRef.current = await detectorPromise;
+
+      const detector = await fld.createDetector(
+        fld.SupportedModels.MediaPipeFaceMesh,
+        {
+          runtime: "mediapipe" as const,
+          solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+          refineLandmarks: true,
+        }
+      );
+      detectorRef.current = detector;
+
+      const animate = async () => {
+        if (!running) return;
+        const { closed } = await detectEyeClosure(
+          detectorRef.current,
+          videoRef.current
+        );
+        setEyesClosedCount((prev) => {
+          const next = closed ? prev + 1 : prev - 1;
+          if (next < 0) return 0;
+          if (next > MAX_EYES_CLOSED_COUNT) return MAX_EYES_CLOSED_COUNT;
+          return next;
+        });
+        await tf.nextFrame();
+        requestAnimationFrame(animate);
+      };
+
+      videoRef.current.onloadedmetadata = () => animate();
     };
-    initTensorFlow();
+
+    init();
+    return () => { running = false; };
   }, []);
 
   const eyesClosed =
@@ -84,7 +87,6 @@ function App() {
 
   return (
     <>
-      {/* Hidden video for eye detection — always present */}
       <video
         ref={videoRef}
         width="1"
@@ -92,7 +94,6 @@ function App() {
         autoPlay
         playsInline
         muted
-        onLoadedMetadata={animate}
         style={{ position: "fixed" }}
       />
 
@@ -101,26 +102,13 @@ function App() {
       )}
 
       {mode === "search" && (
-        <div
-          className={css({
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            margin: theme.sizing.scale650,
-          })}
-        >
-          <HeadingXSmall
-            marginTop={0}
-            marginBottom={theme.sizing.scale650}
-            overrides={{
-              Block: {
-                style: { cursor: "pointer" },
-                props: { onClick: handleExitToLobby },
-              },
-            }}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "1rem" }}>
+          <h3
+            style={{ marginTop: 0, marginBottom: "1rem", cursor: "pointer" }}
+            onClick={handleExitToLobby}
           >
             The Blind Museum
-          </HeadingXSmall>
+          </h3>
           <Search eyesClosed={eyesClosed} />
         </div>
       )}

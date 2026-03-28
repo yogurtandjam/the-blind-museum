@@ -1,24 +1,15 @@
-import { useStyletron } from "baseui";
-
 type ImageProps = {
   src: string;
 };
-export default (props: ImageProps) => {
-  const [css, theme] = useStyletron();
+
+export default function ArtImage({ src }: ImageProps) {
   return (
-    <div
-      className={css({
-        marginTop: theme.sizing.scale650,
-        textAlign: "center",
-      })}
-    >
+    <div style={{ marginTop: "1rem", textAlign: "center" }}>
       <img
-        src={props.src}
-        className={css({
-          maxWidth: "100%",
-          maxHeight: "100%",
-        })}
+        src={src}
+        alt=""
+        style={{ maxWidth: "100%", maxHeight: "100%" }}
       />
     </div>
   );
-};
+}
