@@ -43,8 +43,7 @@ function App() {
       const detector = await fld.createDetector(
         fld.SupportedModels.MediaPipeFaceMesh,
         {
-          runtime: "mediapipe" as const,
-          solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+          runtime: "tfjs" as const,
           refineLandmarks: true,
         }
       );
