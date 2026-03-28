@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useStyletron } from "baseui";
 import { HeadingXSmall } from "baseui/typography";
 import { detectEyeClosure } from "./tf";
 import * as tf from "@tensorflow/tfjs";
 import * as fld from "@tensorflow-models/face-landmarks-detection";
 import { Search } from "./Search";
+import { Lobby } from "./components/Lobby";
+import { GalleryWalk } from "./components/GalleryWalk";
+import { useAudioEngine } from "./hooks/useAudioEngine";
 
 const USER_MEDIA_CONSTRAINTS = {
   audio: false,
@@ -27,9 +30,12 @@ const detectorPromise = fld.createDetector(
 const MAX_EYES_CLOSED_COUNT = 10;
 const DETECTOR_SMOOTHING = 0.7;
 
+type AppMode = "lobby" | "search" | "gallery";
+
 function App() {
   const [css, theme] = useStyletron();
   const [eyesClosedCount, setEyesClosedCount] = useState(0);
+  const [mode, setMode] = useState<AppMode>("lobby");
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectorRef = useRef<fld.FaceLandmarksDetector | null>(null);
 
@@ -67,15 +73,18 @@ function App() {
   const eyesClosed =
     eyesClosedCount > MAX_EYES_CLOSED_COUNT * DETECTOR_SMOOTHING;
 
+  const audioEngine = useAudioEngine();
+
+  const handleEnterMuseum = useCallback(() => {
+    audioEngine.initAudio();
+    setMode("gallery");
+  }, [audioEngine]);
+  const handleSearch = useCallback(() => setMode("search"), []);
+  const handleExitToLobby = useCallback(() => setMode("lobby"), []);
+
   return (
-    <div
-      className={css({
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        margin: theme.sizing.scale650,
-      })}
-    >
+    <>
+      {/* Hidden video for eye detection — always present */}
       <video
         ref={videoRef}
         width="1"
@@ -86,11 +95,45 @@ function App() {
         onLoadedMetadata={animate}
         style={{ position: "fixed" }}
       />
-      <HeadingXSmall marginTop={0} marginBottom={theme.sizing.scale650}>
-        The Blind Museum
-      </HeadingXSmall>
-      <Search eyesClosed={eyesClosed} />
-    </div>
+
+      {mode === "lobby" && (
+        <Lobby onEnterMuseum={handleEnterMuseum} onSearch={handleSearch} />
+      )}
+
+      {mode === "search" && (
+        <div
+          className={css({
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            margin: theme.sizing.scale650,
+          })}
+        >
+          <HeadingXSmall
+            marginTop={0}
+            marginBottom={theme.sizing.scale650}
+            overrides={{
+              Block: {
+                style: { cursor: "pointer" },
+                props: { onClick: handleExitToLobby },
+              },
+            }}
+          >
+            The Blind Museum
+          </HeadingXSmall>
+          <Search eyesClosed={eyesClosed} />
+        </div>
+      )}
+
+      {mode === "gallery" && (
+        <GalleryWalk
+          eyesClosed={eyesClosed}
+          onExit={handleExitToLobby}
+          onWingNavigate={audioEngine.onWingNavigate}
+          startAmbient={audioEngine.startAmbient}
+        />
+      )}
+    </>
   );
 }
 
