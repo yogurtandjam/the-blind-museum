@@ -1,76 +1,43 @@
-// https://stackoverflow.com/questions/61412000/do-i-need-to-use-the-import-type-feature-of-typescript-3-8-if-all-of-my-import
-import type { FaceLandmarksDetector } from "@tensorflow-models/face-landmarks-detection";
+import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
-type Keypoint = {
-  x: number;
-  y: number;
-};
-type Keypoints = Keypoint[];
+let landmarker: FaceLandmarker | null = null;
 
-type EyeKeypoints = {
-  bottomLandmark: Keypoint;
-  topLandmark: Keypoint;
-  leftLandmark: Keypoint;
-  rightLandmark: Keypoint;
-};
+const BLINK_THRESHOLD = 0.5;
 
-// Average EAR for eyes open is 0.141 and for eyes closed is 0.339
-const EAR_THRESHOLD = 0.141;
+export async function initFaceDetection(): Promise<void> {
+  const vision = await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+  );
 
-const rightEyeKeyPoints = (keypoints: Keypoints): EyeKeypoints => {
-  return {
-    bottomLandmark: keypoints[145],
-    topLandmark: keypoints[159],
-    leftLandmark: keypoints[33],
-    rightLandmark: keypoints[133],
-  };
-};
-const leftEyeKeyPoints = (keypoints: Keypoints): EyeKeypoints => {
-  return {
-    bottomLandmark: keypoints[374],
-    topLandmark: keypoints[386],
-    leftLandmark: keypoints[362],
-    rightLandmark: keypoints[263],
-  };
-};
-
-export const detectEyeClosure = async (
-  detector: FaceLandmarksDetector | null,
-  video: HTMLVideoElement | null
-) => {
-  if (!detector || !video) {
-    return { closed: false };
-  }
-  const faces = await detector.estimateFaces(video);
-
-  if (!faces || faces.length === 0) {
-    return { closed: false };
-  }
-
-  const closed = faces.every((face) => {
-    const { keypoints } = face;
-
-    const rightEAR = calculateEAR(rightEyeKeyPoints(keypoints));
-    const leftEAR = calculateEAR(leftEyeKeyPoints(keypoints));
-
-    // true if both eyes are closed
-    return leftEAR <= EAR_THRESHOLD && rightEAR <= EAR_THRESHOLD;
+  landmarker = await FaceLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath:
+        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      delegate: "GPU",
+    },
+    runningMode: "VIDEO",
+    numFaces: 1,
+    outputFaceBlendshapes: true,
   });
-  return { closed };
-};
-
-function euclideanDistance(point1: Keypoint, point2: Keypoint) {
-  return Math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2);
 }
 
-function calculateEAR({
-  topLandmark,
-  bottomLandmark,
-  leftLandmark,
-  rightLandmark,
-}: EyeKeypoints) {
-  const verticalDist = euclideanDistance(topLandmark, bottomLandmark);
-  const horizontalDist = euclideanDistance(leftLandmark, rightLandmark);
-  const ear = verticalDist / horizontalDist;
-  return ear;
+export function detectEyesClosed(video: HTMLVideoElement): boolean {
+  if (!landmarker || video.readyState < 2) return false;
+
+  const result = landmarker.detectForVideo(video, performance.now());
+
+  if (
+    !result.faceBlendshapes ||
+    result.faceBlendshapes.length === 0
+  ) {
+    return false;
+  }
+
+  const shapes = result.faceBlendshapes[0].categories;
+  const leftBlink = shapes.find((s) => s.categoryName === "eyeBlinkLeft");
+  const rightBlink = shapes.find((s) => s.categoryName === "eyeBlinkRight");
+
+  if (!leftBlink || !rightBlink) return false;
+
+  return leftBlink.score > BLINK_THRESHOLD && rightBlink.score > BLINK_THRESHOLD;
 }

@@ -72,7 +72,7 @@ export async function playNarration(
 ): Promise<StopHandle> {
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
 
-  // 1. Try Met museum audio guide
+  // 1. Try Met museum audio guide (only ~500 objects have audio, mostly major highlights)
   try {
     const metAudio = await fetchAudioForArtwork(objectID, signal);
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");

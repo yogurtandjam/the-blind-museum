@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { detectEyeClosure } from "./tf";
+import { initFaceDetection, detectEyesClosed } from "./tf";
 import { Search } from "./Search";
 import { Lobby } from "./components/Lobby";
 import { GalleryWalk } from "./components/GalleryWalk";
 import { useAudioEngine } from "./hooks/useAudioEngine";
-
-const USER_MEDIA_CONSTRAINTS = {
-  audio: false,
-  video: {
-    facingMode: "user",
-  },
-};
 
 const MAX_EYES_CLOSED_COUNT = 10;
 const DETECTOR_SMOOTHING = 0.7;
@@ -21,8 +14,6 @@ function App() {
   const [eyesClosedCount, setEyesClosedCount] = useState(0);
   const [mode, setMode] = useState<AppMode>("lobby");
   const videoRef = useRef<HTMLVideoElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const detectorRef = useRef<any>(null);
 
   useEffect(() => {
     let running = true;
@@ -30,42 +21,33 @@ function App() {
     const init = async () => {
       if (!videoRef.current) return;
 
-      const [tf, fld] = await Promise.all([
-        import("@tensorflow/tfjs"),
-        import("@tensorflow-models/face-landmarks-detection"),
-      ]);
-
-      const stream = await navigator.mediaDevices.getUserMedia(
-        USER_MEDIA_CONSTRAINTS
-      );
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: "user" },
+      });
       videoRef.current.srcObject = stream;
 
-      const detector = await fld.createDetector(
-        fld.SupportedModels.MediaPipeFaceMesh,
-        {
-          runtime: "tfjs" as const,
-          refineLandmarks: true,
-        }
-      );
-      detectorRef.current = detector;
+      await new Promise<void>((resolve) => {
+        const video = videoRef.current!;
+        if (video.readyState >= 2) resolve();
+        else video.onloadeddata = () => resolve();
+      });
 
-      const animate = async () => {
+      await initFaceDetection();
+
+      const animate = () => {
         if (!running) return;
-        const { closed } = await detectEyeClosure(
-          detectorRef.current,
-          videoRef.current
-        );
+        const closed = detectEyesClosed(videoRef.current!);
         setEyesClosedCount((prev) => {
           const next = closed ? prev + 1 : prev - 1;
           if (next < 0) return 0;
           if (next > MAX_EYES_CLOSED_COUNT) return MAX_EYES_CLOSED_COUNT;
           return next;
         });
-        await tf.nextFrame();
         requestAnimationFrame(animate);
       };
 
-      videoRef.current.onloadedmetadata = () => animate();
+      animate();
     };
 
     init();
@@ -86,6 +68,11 @@ function App() {
 
   return (
     <>
+      {/* IMPORTANT: Video element MUST remain on-screen for MediaPipe face
+         detection to work. Moving it offscreen (top:-9999px) or hiding it
+         (display:none, visibility:hidden) breaks the detection pipeline.
+         1x1px with position:fixed keeps it invisible to the user while
+         the video stream still sends full-resolution frames to the landmarker. */}
       <video
         ref={videoRef}
         width="1"
@@ -101,7 +88,14 @@ function App() {
       )}
 
       {mode === "search" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "1rem" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            margin: "1rem",
+          }}
+        >
           <h3
             style={{ marginTop: 0, marginBottom: "1rem", cursor: "pointer" }}
             onClick={handleExitToLobby}
