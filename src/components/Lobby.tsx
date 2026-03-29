@@ -1,24 +1,9 @@
-import { useState } from "react";
-import { getApiKey, setApiKey } from "../audio/tts";
-
 type LobbyProps = {
   onEnterMuseum: () => void;
   onSearch: () => void;
 };
 
 export function Lobby({ onEnterMuseum, onSearch }: LobbyProps) {
-  const [apiKey, setApiKeyState] = useState(getApiKey() || "");
-  const [showKeyInput, setShowKeyInput] = useState(false);
-
-  const handleSaveKey = () => {
-    if (apiKey.trim()) {
-      setApiKey(apiKey.trim());
-    }
-    setShowKeyInput(false);
-  };
-
-  const hasKey = !!getApiKey();
-
   return (
     <div
       style={{
@@ -112,70 +97,6 @@ export function Lobby({ onEnterMuseum, onSearch }: LobbyProps) {
         >
           Search
         </button>
-
-        <div style={{ marginTop: "2rem", width: "100%" }}>
-          {!showKeyInput ? (
-            <p
-              onClick={() => setShowKeyInput(true)}
-              style={{
-                color: "#555",
-                cursor: "pointer",
-                textAlign: "center",
-                fontSize: "0.85rem",
-              }}
-            >
-              {hasKey ? "OpenAI voice active \u2713" : "Add OpenAI key for AI voice"}
-            </p>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <input
-                value={apiKey}
-                onChange={(e) => setApiKeyState(e.target.value)}
-                placeholder="sk-..."
-                type="password"
-                style={{
-                  padding: "0.5rem",
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #333",
-                  borderRadius: "4px",
-                  color: "#e0e0e0",
-                  fontSize: "0.9rem",
-                }}
-              />
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button
-                  onClick={handleSaveKey}
-                  style={{
-                    flex: 1,
-                    padding: "0.5rem",
-                    backgroundColor: "#333",
-                    color: "#e0e0e0",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setShowKeyInput(false)}
-                  style={{
-                    padding: "0.5rem",
-                    backgroundColor: "transparent",
-                    color: "#555",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-              <p style={{ color: "#444", fontSize: "0.75rem" }}>
-                Stored locally. Without a key, browser voice is used as fallback.
-              </p>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

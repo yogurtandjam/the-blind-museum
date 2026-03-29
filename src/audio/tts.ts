@@ -1,28 +1,10 @@
 import { fetchAudioForArtwork } from "./metAudio";
 
-const OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech";
-const STORAGE_KEY = "blind-museum-openai-key";
-
-const blobUrlCache = new Map<string, string>();
-
 export type StopHandle = { stop: () => void };
 
-export function getApiKey(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(STORAGE_KEY);
-}
-
-export function setApiKey(key: string) {
-  localStorage.setItem(STORAGE_KEY, key);
-}
-
-export function clearApiKey() {
-  localStorage.removeItem(STORAGE_KEY);
-}
-
 const audioElementCache = new Map<string, HTMLAudioElement>();
+const ttsBlobCache = new Map<string, string>();
 
-/** Play an audio URL via HTML Audio element, reusing cached elements */
 function playAudioUrl(
   url: string,
   signal?: AbortSignal,
@@ -44,7 +26,6 @@ function playAudioUrl(
       },
     };
 
-    // Abort listener — stop download + playback if signal fires
     signal?.addEventListener("abort", () => {
       stopHandle.stop();
       reject(new DOMException("Aborted", "AbortError"));
@@ -60,9 +41,37 @@ function playAudioUrl(
   });
 }
 
+async function fetchTTSBlob(
+  text: string,
+  signal?: AbortSignal
+): Promise<string | null> {
+  if (ttsBlobCache.has(text)) {
+    return ttsBlobCache.get(text)!;
+  }
+
+  try {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+      signal,
+    });
+
+    if (!res.ok) return null;
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    ttsBlobCache.set(text, url);
+    return url;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") throw err;
+    return null;
+  }
+}
+
 /**
  * Main narration entry point.
- * Priority: Met audio guide → OpenAI TTS → SpeechSynthesis
+ * Priority: Met audio guide → OpenAI TTS (server-side) → SpeechSynthesis
  */
 export async function playNarration(
   objectID: string,
@@ -81,19 +90,17 @@ export async function playNarration(
     }
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") throw err;
-    // Fall through to TTS
   }
 
-  // 2. Try OpenAI TTS
-  const blobUrl = await fetchSpeechBlob(fallbackText, "nova", signal);
-  if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-  if (blobUrl) {
-    try {
+  // 2. Try OpenAI TTS via server-side API route
+  try {
+    const blobUrl = await fetchTTSBlob(fallbackText, signal);
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    if (blobUrl) {
       return await playAudioUrl(blobUrl, signal, onEnd);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") throw err;
-      // Fall through to SpeechSynthesis
     }
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") throw err;
   }
 
   // 3. Fallback to SpeechSynthesis
@@ -108,71 +115,24 @@ export async function speakText(
 ): Promise<StopHandle> {
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
 
-  const blobUrl = await fetchSpeechBlob(text, "nova", signal);
-  if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-  if (blobUrl) {
-    try {
-      return await playAudioUrl(blobUrl, signal, onEnd);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") throw err;
-    }
-  }
-  return playSpeechSynthesis(text, onEnd);
-}
-
-async function fetchSpeechBlob(
-  text: string,
-  voice: string = "nova",
-  signal?: AbortSignal
-): Promise<string | null> {
-  const apiKey = getApiKey();
-  if (!apiKey) return null;
-
-  const cacheKey = `${voice}:${text}`;
-  if (blobUrlCache.has(cacheKey)) {
-    return blobUrlCache.get(cacheKey)!;
-  }
-
   try {
-    const res = await fetch(OPENAI_TTS_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "tts-1",
-        voice,
-        input: text,
-        response_format: "mp3",
-        speed: 0.95,
-      }),
-      signal,
-    });
-
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      console.error(`[TTS] API error ${res.status}: ${body}`);
-      if (res.status === 401) clearApiKey();
-      return null;
+    const blobUrl = await fetchTTSBlob(text, signal);
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    if (blobUrl) {
+      return await playAudioUrl(blobUrl, signal, onEnd);
     }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    blobUrlCache.set(cacheKey, url);
-    return url;
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") throw err;
-    console.error("[TTS] Fetch failed:", err);
-    return null;
   }
+
+  return playSpeechSynthesis(text, onEnd);
 }
 
 function playSpeechSynthesis(
   text: string,
   onEnd?: () => void
 ): StopHandle {
-  if (!("speechSynthesis" in window)) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
     onEnd?.();
     return { stop: () => {} };
   }
