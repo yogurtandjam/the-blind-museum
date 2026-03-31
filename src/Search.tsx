@@ -14,7 +14,7 @@ type TArtPiece = {
 type TArtPieces = TArtPiece[];
 
 const search = async (q: string) => {
-  const res = await fetch(`${SEARCH_URL}?q=${q}`);
+  const res = await fetch(`${SEARCH_URL}?q=${q}&hasImages=true`);
   const artworkIds: TArtworkIds = await res.json();
 
   const responses = await Promise.all(
